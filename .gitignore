@@ -1,0 +1,13 @@
+.nrepl-port
+/.shadow-cljs
+/.vscode
+Capstanfile
+Dockerfile
+Procfile
+dev-config.edn
+test-config.edn
+shadow-cljs.edn
+/target
+/node_modules
+package.json
+/log
