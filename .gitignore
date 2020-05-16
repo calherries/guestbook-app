@@ -11,3 +11,5 @@ shadow-cljs.edn
 /node_modules
 package.json
 /log
+app_dev.db.mv.db
+app_dev.db.trace.db
