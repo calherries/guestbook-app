@@ -76,3 +76,18 @@
   :common/error
   (fn [db _]
     (:common/error db)))
+
+(rf/reg-event-db
+  :app/initialize
+  (fn [db _]
+    (assoc db :messages/list [])))
+
+(rf/reg-event-db
+  :messages/add
+  (fn [db [_ message]]
+    (update db :messages/list conj message)))
+
+(rf/reg-sub
+  :messages/list
+  (fn [db _]
+    (:messages/list db [])))
