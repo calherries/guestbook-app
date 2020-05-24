@@ -54,10 +54,14 @@
 (defn send-message! [fields errors]
   (if-let [validation-errors (validation/validate-message @fields)]
     (reset! errors validation-errors)
-    (do
-      (rf/dispatch [:messages/add (assoc @fields :timestamp (js/Date.))])
-      (reset! fields nil)
-      (reset! errors nil))))
+    (POST "/api/message"
+          {:format  :json
+           :headers {"Accept" "application/transit+json"}
+           :params  @fields
+           :handler #(do
+                       (rf/dispatch [:messages/add (assoc @fields :timestamp (js/Date.))])
+                       (reset! fields nil)
+                       (reset! errors nil))})))
 
 (defn errors-component [errors id]
   (when-let [error (id @errors)]
@@ -129,8 +133,13 @@
   (rdom/render [#'page] (.getElementById js/document "app"))
   (.log js/console "Components Mounted!"))
 
+(defn get-messages! []
+  (GET "/api/messages"
+       {:headers {"Accept" "application/transit+json"}
+        :handler #(rf/dispatch [:messages/set (:messages %)])}))
+
 (defn init! []
   (start-router!)
-  (rf/dispatch [:app/initialize])
+  (get-messages!)
   (ajax/load-interceptors!)
   (mount-components))

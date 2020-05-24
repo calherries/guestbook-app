@@ -48,6 +48,22 @@
              {:url    "/api/swagger.json"
               :config {:validator-url nil}})}]]
 
+   ["/message"
+    {:post
+     {:parameters
+      {:body
+       {:name    string?
+        :message string?}}
+
+      :responses
+      {200
+       {:body map?}}
+
+      :handler
+      (fn [{{params :body} :parameters}]
+        (msg/save-message! params)
+        (ok {:status :ok}))}}]
+
    ["/messages"
     {:get
      (fn [_]
