@@ -64,11 +64,11 @@
 
   :profiles
   {:uberjar {:omit-source true
-             :prep-tasks  ["compile" ["shadow" "release" "app"]]
+             :prep-tasks  ["compile" ["run" "-m" "shadow.cljs.devtools.cli" "release" "app"]]
 
              :aot            :all
              :uberjar-name   "app.jar"
-             :source-paths   ["env/prod/clj"  "env/prod/cljs" ]
+             :source-paths   ["env/prod/clj" "env/prod/cljc" "env/prod/cljs" ]
              :resource-paths ["env/prod/resources"]}
 
    :dev  [:project/dev :profiles/dev]

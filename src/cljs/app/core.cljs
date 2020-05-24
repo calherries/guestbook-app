@@ -49,7 +49,7 @@
      [:li
       [:time (.toLocaleString timestamp)]
       [:p message]
-      [:p " - " name]])])
+      [:p "@" name]])])
 
 (defn send-message! [fields errors]
   (if-let [validation-errors (validation/validate-message @fields)]
@@ -59,39 +59,39 @@
            :headers {"Accept" "application/transit+json"}
            :params  @fields
            :handler #(do
-                       (rf/dispatch [:messages/add (assoc @fields :timestamp (js/Date.))])
+                       (rf/dispatch [:messages/add (-> @fields
+                                                       (assoc :timestamp (js/Date.))
+                                                       (update :name str " [Client]"))])
                        (reset! fields nil)
                        (reset! errors nil))})))
 
-(defn errors-component [errors id]
-  (when-let [error (id @errors)]
+(defn errors-component [id]
+  (when-let [error @(rf/subscribe [:form/error id])]
     [:div.notification.is-danger (string/join error)]))
 
 (defn message-form []
-  (let [fields (r/atom {})
-        errors (r/atom {})]
-    (fn []
-      [:div
-       [errors-component errors :server-error]
-       [:div.field
-        [:label.label {:for :name} "Name"]
-        [errors-component errors :name]
-        [:input.input
-         {:type      :text
-          :name      :name
-          :on-change #(swap! fields assoc :name (-> % .-target .-value))
-          :value     (:name @fields)}]]
-       [:div.field
-        [:label.label {:for :message} "Message"]
-        [errors-component errors :message]
-        [:textarea.textarea
-         {:name      :message
-          :on-change #(swap! fields assoc :message (-> % .-target .-value))
-          :value     (:message @fields)}]]
-       [:input.button.is-primary
-        {:type     :submit
-         :on-click #(send-message! fields errors)
-         :value    "comment"}]])))
+  [:div
+   [errors-component :server-error]
+   [:div.field
+    [:label.label {:for :name} "Name"]
+    [errors-component :name]
+    [:input.input
+     {:type      :text
+      :name      :name
+      :on-change #(rf/dispatch [:form/set-field :name (.. % -target -value)])
+      :value     @(rf/subscribe [:form/field :name])}]]
+   [:div.field
+    [:label.label {:for :message} "Message"]
+    [errors-component :message]
+    [:textarea.textarea
+     {:name      :message
+      :on-change #(rf/dispatch [:form/set-field :message (.. % -target -value)])
+      :value     @(rf/subscribe [:form/field :message])}]]
+   [:input.button.is-primary
+    {:type     :submit
+     :disabled @(rf/subscribe [:form/validation-errors?])
+     :on-click #(rf/dispatch [:message/send! @(rf/subscribe [:form/fields])])
+     :value    "comment"}]])
 
 (defn home-page []
   (let [messages (rf/subscribe [:messages/list])]
