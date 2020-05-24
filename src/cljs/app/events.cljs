@@ -31,14 +31,6 @@
   (fn [db [_ docs]]
     (assoc db :docs docs)))
 
-(rf/reg-event-fx
-  :fetch-docs
-  (fn [_ _]
-    {:http-xhrio {:method          :get
-                  :uri             "/docs"
-                  :response-format (ajax/raw-response-format)
-                  :on-success       [:set-docs]}}))
-
 (rf/reg-event-db
   :common/set-error
   (fn [db [_ error]]
@@ -78,10 +70,24 @@
   (fn [db _]
     (:common/error db)))
 
-;; (rf/reg-event-db
-;;   :app/initialize
-;;   (fn [db _]
-;;     (assoc db :messages/list [])))
+(rf/reg-event-fx
+  :app/initialize
+  (fn [_ _]
+    {:db       {:messages/loading? true}
+     :dispatch [:messages/load]}))
+
+(rf/reg-sub
+  :messages/loading?
+  (fn [db _]
+    (:messages/loading? db)))
+
+(rf/reg-event-fx
+  :messages/load
+  (fn [{:keys [db]} _]
+    (GET "/api/messages"
+         {:headers {"Accept" "application/transit+json"}
+          :handler #(rf/dispatch [:messages/set (:messages %)])})
+    {:db (assoc db :messages/loading? false)}))
 
 (rf/reg-event-db
   :messages/add

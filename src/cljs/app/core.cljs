@@ -93,53 +93,28 @@
      :on-click #(rf/dispatch [:message/send! @(rf/subscribe [:form/fields])])
      :value    "comment"}]])
 
-(defn home-page []
+(defn home []
   (let [messages (rf/subscribe [:messages/list])]
-    [:section.section>div.container>div.content
-     [:div.columns
-      [:div.column
-       [message-list messages]
-       [:h1 "Messages"]
-       [message-form]]]]))
-
-(defn page []
-  (if-let [page @(rf/subscribe [:common/page])]
-    [:div
-     [navbar]
-     [page]]))
-
-(defn navigate! [match _]
-  (rf/dispatch [:common/navigate match]))
-
-(def router
-  (reitit/router
-    [["/" {:name        :home
-           :view        #'home-page
-           :controllers [{:start (fn [_] (rf/dispatch [:page/init-home]))}]}]
-     ["/about" {:name :about
-                :view #'about-page}]]))
-
-(defn start-router! []
-  (rfe/start!
-    router
-    navigate!
-    {}))
+    (fn []
+      [:div.content>div.columns.is-centered>div.column.is-two-thirds
+       (if @(rf/subscribe [:messages/loading?])
+         [:h3 "Loading messages"]
+         [:div
+          [:div.columns>div.column
+           [:h1 "Messages"]
+           [message-list messages]]
+          [:div.columns>div.column
+           [message-form]]])])))
 
 ;; -------------------------
 ;; Initialize app
 (defn ^:dev/after-load mount-components []
   (.log js/console "Mounting Components...")
   (rf/clear-subscription-cache!)
-  (rdom/render [#'page] (.getElementById js/document "app"))
+  (rdom/render [#'home] (.getElementById js/document "app"))
   (.log js/console "Components Mounted!"))
 
-(defn get-messages! []
-  (GET "/api/messages"
-       {:headers {"Accept" "application/transit+json"}
-        :handler #(rf/dispatch [:messages/set (:messages %)])}))
-
 (defn init! []
-  (start-router!)
-  (get-messages!)
+  (rf/dispatch [:app/initialize])
   (ajax/load-interceptors!)
   (mount-components))
