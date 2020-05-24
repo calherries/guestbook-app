@@ -3,6 +3,7 @@
    [re-frame.core :as rf]
    [ajax.core :as ajax :refer [GET POST]]
    [app.validation :refer [validate-message]]
+   [app.websockets :as ws]
    [reitit.frontend.easy :as rfe]
    [reitit.frontend.controllers :as rfc]))
 
@@ -166,15 +167,5 @@
 (rf/reg-event-fx
   :message/send!
   (fn [{:keys [db]} [_ fields]]
-    (POST "/api/message"
-          {:format        :json
-           :headers       {"Accept" "application/transit+json"}
-           :params        fields
-           :handler       #(rf/dispatch
-                             [:messages/add
-                              (-> fields
-                                  (assoc :timestamp (js/Date.)))])
-           :error-handler #(rf/dispatch
-                             [:form/set-server-errors
-                              (get-in % [:response :errors])])})
+    (ws/send-message! fields)
     {:db (dissoc db :form/server-errors)}))

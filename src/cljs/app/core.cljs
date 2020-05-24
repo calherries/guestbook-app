@@ -8,6 +8,7 @@
    [goog.history.EventType :as HistoryEventType]
    [markdown.core :refer [md->html]]
    [app.ajax :as ajax]
+   [app.websockets :as ws]
    [ajax.core :refer [GET POST]]
    [app.events]
    [reitit.core :as reitit]
@@ -117,6 +118,13 @@
           [:div.columns>div.column
            [message-form]]])])))
 
+(defn handle-response! [response]
+  (if-let [errors (:errors response)]
+    (rf/dispatch [:form/set-server-errors errors])
+    (do
+      (rf/dispatch [:messages/add response])
+      (rf/dispatch [:form/clear-fields response]))))
+
 ;; -------------------------
 ;; Initialize app
 (defn ^:dev/after-load mount-components []
@@ -127,5 +135,7 @@
 
 (defn init! []
   (rf/dispatch [:app/initialize])
+  (ws/connect! (str "ws://" (.-host js/location) "/ws")
+               handle-response!)
   (ajax/load-interceptors!)
   (mount-components))

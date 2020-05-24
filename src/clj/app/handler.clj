@@ -1,15 +1,16 @@
 (ns app.handler
   (:require
-    [app.middleware :as middleware]
-    [app.layout :refer [error-page]]
-    [app.routes.home :refer [home-routes]]
-    [app.routes.services :refer [service-routes]]
-    [reitit.swagger-ui :as swagger-ui]
-    [reitit.ring :as ring]
-    [ring.middleware.content-type :refer [wrap-content-type]]
-    [ring.middleware.webjars :refer [wrap-webjars]]
-    [app.env :refer [defaults]]
-    [mount.core :as mount]))
+   [app.middleware :as middleware]
+   [app.layout :refer [error-page]]
+   [app.routes.home :refer [home-routes]]
+   [app.routes.services :refer [service-routes]]
+   [app.routes.websockets :refer [websocket-routes]]
+   [reitit.swagger-ui :as swagger-ui]
+   [reitit.ring :as ring]
+   [ring.middleware.content-type :refer [wrap-content-type]]
+   [ring.middleware.webjars :refer [wrap-webjars]]
+   [app.env :refer [defaults]]
+   [mount.core :as mount]))
 
 (mount/defstate init-app
   :start ((or (:init defaults) (fn [])))
@@ -20,7 +21,8 @@
   (ring/ring-handler
     (ring/router
       [(home-routes)
-       (service-routes)])
+       (service-routes)
+       (websocket-routes)])
     (ring/routes
       (swagger-ui/create-swagger-ui-handler
         {:path   "/swagger-ui"
