@@ -93,6 +93,15 @@
      :on-click #(rf/dispatch [:message/send! @(rf/subscribe [:form/fields])])
      :value    "comment"}]])
 
+(defn reload-messages-button []
+  (let [loading? (rf/subscribe [:messages/loading?])]
+    [:button.button.is-info.is-fullwidth
+     {:on-click #(rf/dispatch [:messages/load])
+      :disabled @loading?}
+     (if @loading?
+       "Loading messages"
+       "Refresh messages")]))
+
 (defn home []
   (let [messages (rf/subscribe [:messages/list])]
     (fn []
@@ -103,6 +112,8 @@
           [:div.columns>div.column
            [:h1 "Messages"]
            [message-list messages]]
+          [:div.columns>div.column
+           [reload-messages-button]]
           [:div.columns>div.column
            [message-form]]])])))
 
