@@ -1,21 +1,20 @@
-# app
+# Guestbook App
 
-generated using Luminus version "3.72"
+I created this web app while following the book [Web Development with Clojure, Third Edition](https://pragprog.com/book/dswdcloj3/web-development-with-clojure-third-edition).
 
-FIXME
+The following libraries are used:
+* Http-kit for the web server
+* Ring for web server abstraction
+* Mount for managing stateful components
+* Reitit for routing
+* Selmer for server-side rendering
+* Muuntaja for HTTP format endcoding and decoding
+* Struct for shared schema validation on the front-end and back-end
+* Reagent and Re-frame for the front-end framework
+* Sente for WebSockets
 
-## Prerequisites
-
-You will need [Leiningen][1] 2.0 or above installed.
-
-[1]: https://github.com/technomancy/leiningen
-
-## Running
+## Running ##
 
 To start a web server for the application, run:
 
-    lein run 
-
-## License
-
-Copyright © 2020 FIXME
+    lein run

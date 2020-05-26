@@ -1,6 +1,6 @@
 (defproject app "0.1.0-SNAPSHOT"
 
-  :description "FIXME: write description"
+  :description "guestbook app"
   :url "http://example.com/FIXME"
 
   :dependencies [[ch.qos.logback/logback-classic "1.2.3"]
