@@ -61,3 +61,6 @@
   (migrations/create name (select-keys env [:database-url])))
 
 
+(comment (start))
+(comment (restart))
+(comment (stop))

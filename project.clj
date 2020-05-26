@@ -42,6 +42,7 @@
                  [ring/ring-core "1.8.1"]
                  [ring/ring-defaults "0.3.2"]
                  [selmer "1.12.24"]
+                 [com.taoensso/sente "1.15.0"]
                  [thheller/shadow-cljs "2.9.2" :scope "provided"]]
 
   :min-lein-version "2.0.0"
