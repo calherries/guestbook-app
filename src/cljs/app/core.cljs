@@ -13,6 +13,7 @@
    [app.events]
    [reitit.core :as reitit]
    [reitit.frontend.easy :as rfe]
+   [mount.core :as mount]
    [clojure.string :as string]
    [app.validation :as validation])
   (:import goog.History))
@@ -134,8 +135,8 @@
   (.log js/console "Components Mounted!"))
 
 (defn init! []
+  (.log js/console "Initializing App...")
+  (mount/start)
   (rf/dispatch [:app/initialize])
-  (ws/connect! (str "ws://" (.-host js/location) "/ws")
-               handle-response!)
   (ajax/load-interceptors!)
   (mount-components))

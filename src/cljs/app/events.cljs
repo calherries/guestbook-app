@@ -167,5 +167,5 @@
 (rf/reg-event-fx
   :message/send!
   (fn [{:keys [db]} [_ fields]]
-    (ws/send-message! fields)
+    (ws/send! [:message/create! fields])
     {:db (dissoc db :form/server-errors)}))
