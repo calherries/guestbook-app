@@ -61,9 +61,9 @@
            :headers {"Accept" "application/transit+json"}
            :params  @fields
            :handler #(do
-                       (rf/dispatch [:messages/add (-> @fields
-                                                       (assoc :timestamp (js/Date.))
-                                                       (update :name str " [Client]"))])
+                       (rf/dispatch [:message/add (-> @fields
+                                                      (assoc :timestamp (js/Date.))
+                                                      (update :name str " [Client]"))])
                        (reset! fields nil)
                        (reset! errors nil))})))
 
@@ -118,13 +118,6 @@
            [reload-messages-button]]
           [:div.columns>div.column
            [message-form]]])])))
-
-(defn handle-response! [response]
-  (if-let [errors (:errors response)]
-    (rf/dispatch [:form/set-server-errors errors])
-    (do
-      (rf/dispatch [:messages/add response])
-      (rf/dispatch [:form/clear-fields response]))))
 
 ;; -------------------------
 ;; Initialize app

@@ -26,7 +26,9 @@
 
 (defmethod handle-message :default
   [{:keys [id]}]
-  (log/debug "Received unrecognized websocket event type: " id))
+  (log/debug "Received unrecognized websocket event type: " id)
+  {:error (str "Unrecognized websocket event type: " (pr-str id))
+   :id    id})
 
 (defmethod handle-message :message/create!
   [{:keys [?data uid] :as message}]
@@ -42,13 +44,20 @@
                          ;; else
                          {:errors {:server-error ["Failed to save message!"]}}))))]
     (if (:errors response)
-      (send! uid [:message/creation-errors response])
-      (doseq [uid @(:connected-uids socket)]
-        (send! uid [:message/add response])))))
+      (do
+        (log/debug "Failed to save message: " ?data)
+        response)
+      (do
+        (doseq [uid @(:connected-uids socket)]
+          (send! uid [:message/add response]))
+        {:success true}))))
 
-(defn receive-message! [{:keys [id] :as message}]
+(defn receive-message!
+  [{:keys [id ?reply-fn] :as message}]
   (log/debug "Got message with id: " id)
-  (handle-message message))
+  (let [reply-fn (or ?reply-fn (fn [_]))]
+    (when-some [response (handle-message message)]
+      (reply-fn response))))
 
 (defstate channel-router
   :start (sente/start-chsk-router!

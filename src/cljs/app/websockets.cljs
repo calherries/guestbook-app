@@ -11,11 +11,11 @@
            {:type           :auto ;; determines that Sente can choose AJAX or WebSockets as the connection method
             :wrap-recv-evs? false})) ;; we don't want to receive all messages wrapped in a :chsk/recv event
 
-(defn send! [message]
+(defn send! [& args]
   (if-let [send-fn (:send-fn @socket)] ;; in JS you have to de-reference the socket (due to mount)
-    (send-fn message)
+    (apply send-fn args)
     (throw (ex-info "Couldn't send message, channel isn't open"
-                    {:message message}))))
+                    {:message (first args)}))))
 
 ;; handles messages similarly to the server, but dispatches re-frame events
 ;; instead of interacting with the database
@@ -26,6 +26,7 @@
 
 (defmethod handle-message :message/add
   [_ msg-add-event]
+  (.log js/console "Message to add: " (pr-str msg-add-event))
   (rf/dispatch msg-add-event))
 
 (defmethod handle-message :message/creation-errors
@@ -57,4 +58,6 @@
 (defstate channel-router
   :start (sente/start-chsk-router!
            (:ch-recv @socket)
-           #'receive-message!))
+           #'receive-message!)
+  :stop (when-let [stop-fn @channel-router]
+          (stop-fn)))
