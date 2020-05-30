@@ -2,6 +2,7 @@
   (:require-macros [mount.core :refer [defstate]])
   (:require [re-frame.core :as rf]
             [taoensso.sente :as sente]
+            [ajax.core :refer [GET POST]]
             [mount.core]))
 
 (defstate socket
@@ -16,6 +17,29 @@
     (apply send-fn args)
     (throw (ex-info "Couldn't send message, channel isn't open"
                     {:message (first args)}))))
+
+(rf/reg-fx
+  :ws/send!
+  (fn [{:keys [message timeout callback-event]
+        :or   {timeout 30000}}]
+    (if callback-event
+      (send! message timeout #(rf/dispatch (conj callback-event %)))
+      (send! message))))
+
+(rf/reg-fx
+  :ajax/get
+  (fn [{:keys [url success-event error-event success-path]}]
+    (GET url
+         (cond-> {:headers {"Accept" "application/transit+json"}}
+           success-event (assoc :handler
+                                #(rf/dispatch
+                                   (conj success-event
+                                         (if success-path
+                                           (get-in % success-path)
+                                           %))))
+           error-event   (assoc :error-handler
+                                #(rf/dispatch
+                                   (conj error-event %)))))))
 
 ;; handles messages similarly to the server, but dispatches re-frame events
 ;; instead of interacting with the database

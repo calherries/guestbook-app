@@ -88,7 +88,10 @@
     (GET "/api/messages"
          {:headers {"Accept" "application/transit+json"}
           :handler #(rf/dispatch [:messages/set (:messages %)])})
-    {:db (assoc db :messages/loading? false)}))
+    {:db       (assoc db :messages/loading? false)
+     :ajax/get {:url           "/api/messages"
+                :success-path  [:messages]
+                :success-event [:messages/set]}}))
 
 (rf/reg-event-db
   :message/add
@@ -165,14 +168,16 @@
     (get errors id)))
 
 (rf/reg-event-fx
+  :message/send!-called-back
+  (fn [_ [_ {:keys [success errors]}]]
+    (if success
+      {:dispatch [:form/clear-fields]}
+      {:dispatch [:form/set-server-errors errors]})))
+
+(rf/reg-event-fx
   :message/send!
   (fn [{:keys [db]} [_ fields]]
-    (ws/send!
-      [:message/create! fields]
-      10000
-      (fn [{:keys [success errors] :as response}]
-        (.log js/console "Called back: " (pr-str response))
-        (if success
-          (rf/dispatch [:form/clear-fields])
-          (rf/dispatch [:form/set-server-errors errors]))))
-    {:db (dissoc db :form/server-errors)}))
+    {:db       (dissoc db :form/server-errors)
+     :ws/send! {:message        [:message/create! fields]
+                :timeout        10000
+                :callback-event [:message/send!-called-back]}}))

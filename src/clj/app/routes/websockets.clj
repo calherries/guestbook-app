@@ -16,8 +16,6 @@
   (println "Sending message: " message)
   ((:send-fn socket) uid message))
                                         ;
-
-                                        ;
 (defmulti handle-message
   (fn [{:keys [id]}]
     id))
