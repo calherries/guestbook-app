@@ -11,7 +11,8 @@
    [app.middleware.exception :as exception]
    [ring.util.http-response :refer :all]
    [clojure.java.io :as io]
-   [app.messages :as msg]))
+   [app.messages :as msg]
+   [app.auth :as auth]))
 
 (defn service-routes []
   ["/api"
@@ -72,8 +73,7 @@
    ;;  {:responses
    ;;   {200 {:body
    ;;         {:messages
-   ;;          [{:id        pos-int?
-   ;;            :name      string?
+   ;;          [{:id        pos-int? ;;            :name      string?
    ;;            :message   string?
    ;;            :timestamp inst?}]}}}
    ;;   :handler
@@ -120,4 +120,62 @@
                         :headers {"Content-Type" "image/png"}
                         :body    (-> "public/img/warning_clojure.png"
                                      (io/resource)
-                                     (io/input-stream))})}}]]])
+                                     (io/input-stream))})}}]]
+   ["/login"
+    {:post {:summary "login"
+            :parameters {:body
+                         {:login string?
+                          :password string?}}
+            :responses
+            {200
+             {:body
+              {:identity
+               {:login string?
+                :created_at inst?}}}
+             401
+             {:body
+              {:message string?}}}
+
+            :handler
+            (fn [{{{:keys [login password]} :body} :parameters
+                  session :session}]
+              (if-some [user (auth/authenticate-user login password)]
+                (->
+                  (ok
+                    {:identity user})
+                  (assoc :session (assoc session :identity user)))
+                (unauthorized
+                  {:message "Incorrect login or password."})))}}]
+   ["/register"
+    {:post {:parameters
+            {:body
+             {:login string?
+              :password string?
+              :confirm string?}}
+
+            :responses
+            {200
+             {:body
+              {:message string?}}
+
+             400
+             {:body
+              {:message string?}}
+
+             409
+             {:body
+              {:message string?}}}
+
+            :handler
+            (fn [{{{:keys [login password confirm]} :body} :parameters}]
+              (if-not (= password confirm)
+                (bad-request
+                  {:message
+                   "Password and Confirm do not match."})
+                (try
+                  (auth/create-user! login password)
+                  (ok
+                    {:message "User registration successful. Please log in."})
+                  (catch clojure.lang.ExceptionInfo e
+                    ;; meant to catch duplicate user here, but can't due to error with with-db-transation
+                    (throw e)))))}}]])

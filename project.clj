@@ -10,7 +10,6 @@
                  [com.cognitect/transit-clj "1.0.324"]
                  [com.fasterxml.jackson.core/jackson-databind "2.11.0"]
                  [com.google.javascript/closure-compiler-unshaded "v20200504" :scope "provided"]
-                 [com.h2database/h2 "1.4.200"]
                  [conman "0.8.9"]
                  [cprop "0.1.17"]
                  [day8.re-frame/http-fx "0.1.6"]
@@ -43,7 +42,9 @@
                  [ring/ring-defaults "0.3.2"]
                  [selmer "1.12.24"]
                  [com.taoensso/sente "1.15.0"]
-                 [thheller/shadow-cljs "2.9.2" :scope "provided"]]
+                 [thheller/shadow-cljs "2.9.2" :scope "provided"]
+                 [org.postgresql/postgresql "42.2.6"]
+                 [buddy "2.0.0"]]
 
   :min-lein-version "2.0.0"
 

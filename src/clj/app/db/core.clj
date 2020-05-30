@@ -66,3 +66,10 @@
 (comment (save-message! {:name "Bob" :message "Hello, world"}))
 (comment (save-message! {:name "Alice" :message "Hello, world"}))
 (comment (save-message! {:name "Roxy" :message "Hello, world"}))
+
+;; optional step to get the data into postgres
+(comment (->>
+           (jbdc/query
+             {:connection-uri "jdbc:h2:./app_dev.db"}
+             ["select name, message, timestamp from guestbook"])
+           (jbdc/insert-multi! *db* :posts)))
